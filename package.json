@@ -1,0 +1,76 @@
+{
+  "name": "otdo",
+  "version": "1.0.0",
+  "description": "OTDO - Simple Todo & Note App",
+  "author": "Oktay Kocer <oktaykocer@outlook.com>",
+  "main": "electron/main.js",
+  "private": true,
+  "scripts": {
+    "postinstall": "node scripts/fix-electron-name.js",
+    "fix:electron-name": "node scripts/fix-electron-name.js",
+    "dev": "node scripts/fix-electron-name.js && concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "icons:mac": "bash scripts/generate-mac-icon.sh",
+    "build": "vite build && electron-builder",
+    "build:mac": "vite build && electron-builder --mac",
+    "build:mac:unsigned": "vite build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
+    "preview": "vite preview",
+    "electron": "node scripts/fix-electron-name.js && electron ."
+  },
+  "dependencies": {
+    "@uiw/react-md-editor": "^4.0.4",
+    "date-fns": "^3.6.0",
+    "electron-store": "^10.0.0",
+    "highlight.js": "^11.11.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "react-router-dom": "^6.28.1",
+    "rehype-highlight": "^7.0.1",
+    "remark-gfm": "^4.0.0",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.17",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.0.5",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.otdo.app",
+    "productName": "OTDO",
+    "copyright": "Copyright © 2026 Oktay Kocer",
+    "icon": "build/icon.png",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.icns",
+      "extendInfo": {
+        "NSHumanReadableCopyright": "Copyright © 2026 Oktay Kocer",
+        "CFBundleGetInfoString": "OTDO - Simple Todo & Note App"
+      }
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "icon": "build/icon.png"
+    }
+  }
+}
