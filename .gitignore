@@ -6,7 +6,10 @@ dist/
 dist-electron/
 release/
 out/
-build/
+# build/ holds the app icons electron-builder needs, so only ignore generated files
+build/*
+!build/icon.icns
+!build/icon.png
 
 # Logs
 logs
