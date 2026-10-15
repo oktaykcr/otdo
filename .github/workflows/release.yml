@@ -1,4 +1,4 @@
-name: Release macOS
+name: Release
 
 on:
   push:
@@ -8,8 +8,19 @@ permissions:
   contents: write
 
 jobs:
-  mac:
-    runs-on: macos-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            args: --mac dmg zip --arm64 --x64
+            files: |
+              dist-electron/*.dmg
+              dist-electron/*.zip
+          - os: windows-latest
+            args: --win nsis --x64
+            files: dist-electron/*.exe
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,18 +28,17 @@ jobs:
           node-version: 20
           cache: npm
       - name: Check tag matches package.json version
+        shell: bash
         run: |
           PKG="v$(node -p "require('./package.json').version")"
           [ "$PKG" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME != package.json $PKG"; exit 1; }
       - run: npm ci
       - run: npx vite build
-      # Unsigned build; see README/release notes for the Gatekeeper workaround.
-      - run: npx electron-builder --mac dmg zip --arm64 --x64 --publish never
+      # Unsigned builds; see release notes for the Gatekeeper / SmartScreen workaround.
+      - run: npx electron-builder ${{ matrix.args }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist-electron/*.dmg
-            dist-electron/*.zip
+          files: ${{ matrix.files }}
           generate_release_notes: true

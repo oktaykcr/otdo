@@ -10,6 +10,7 @@ out/
 build/*
 !build/icon.icns
 !build/icon.png
+!build/icon-win.png
 
 # Logs
 logs
