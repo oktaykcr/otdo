@@ -32,6 +32,7 @@ export default function BlockEditor({
   showBounds = false,
   activeMatch = null,
   matchBlockIndices = [],
+  searchQuery = '',
   onSelectionLengthChange,
   activeNoteId = null,
   onOpenNote,
@@ -444,6 +445,28 @@ export default function BlockEditor({
     }
   }, [onSelectionLengthChange, blocks.length, lineSelection])
 
+  const columnRef = useRef(null)
+  // Highlight the matched words inside rendered block text (CSS Custom Highlight API).
+  useEffect(() => {
+    if (!CSS.highlights) return
+    const q = searchQuery.trim().toLowerCase()
+    const root = columnRef.current
+    if (!q || !root) { CSS.highlights.delete('otdo-search'); return }
+    const ranges = []
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.data.toLowerCase()
+      for (let i = text.indexOf(q); i !== -1; i = text.indexOf(q, i + q.length)) {
+        const r = new Range()
+        r.setStart(node, i)
+        r.setEnd(node, i + q.length)
+        ranges.push(r)
+      }
+    }
+    CSS.highlights.set('otdo-search', new Highlight(...ranges))
+    return () => CSS.highlights.delete('otdo-search')
+  }, [searchQuery, blocks, focusIdx])
+
   if (!blocks?.length) return null
 
   const viewportStyle = embedded ? undefined : buildEditorViewportStyle({
@@ -461,6 +484,7 @@ export default function BlockEditor({
 
   const blocksColumn = (
     <div
+      ref={columnRef}
       className={`space-y-0.5 ${
         showBounds
           ? 'border border-dashed border-accent/40 rounded-xl bg-surface/10 px-3 py-2 shadow-[inset_0_0_0_1px_rgba(99,102,241,0.06)]'
@@ -503,6 +527,8 @@ export default function BlockEditor({
             <div className="flex-1 min-w-0">
               <Block
                 block={displayBlock}
+                searchQuery={searchQuery}
+                searchHit={!!searchQuery.trim() && matchSet.has(blockIdx)}
                 index={sourceBlockIdx}
                 listNumber={getNumberedListIndex(blocks, blockIdx)}
                 focused={focusIdx === sourceBlockIdx && !lineSelection}

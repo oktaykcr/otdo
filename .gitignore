@@ -42,3 +42,5 @@ desktop.ini
 
 # Testing
 coverage/
+# graphify output
+graphify-out/
