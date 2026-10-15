@@ -35,6 +35,8 @@ const TYPE_PLACEHOLDERS = {
 
 export default function Block({
   block,
+  searchHit = false,
+  searchQuery = '',
   onChange,
   onDelete,
   onEnter,
@@ -272,7 +274,7 @@ export default function Block({
     if (handled) e.preventDefault()
   }, [onPasteMarkdown])
 
-  const showFormattedPreview = !focused && block.content && hasInlineFormatting(block.content)
+  const showFormattedPreview = !focused && block.content && (searchHit || hasInlineFormatting(block.content))
 
   useEffect(() => {
     if (!focused) return
@@ -315,6 +317,7 @@ export default function Block({
         onFocus={onFocus}
         onEnter={onEnter}
         searchSelectRange={searchSelectRange}
+        searchQuery={searchQuery}
       />
     )
   }

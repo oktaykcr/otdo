@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { scanNotesFolder } from '../lib/notesFolderScan'
 import { buildFolderPath, buildNotePath, renameNotePath } from '../lib/notePaths'
 import { uploadNoteToDrive, deleteNoteFromDrive, listDriveFolderNotes, downloadDriveNoteContent } from '../lib/driveSync'
 import { extractTodoIdsFromMarkdown } from '../lib/telegramTodos'
@@ -403,6 +404,8 @@ const useNoteStore = create((set, get) => {
     let folders = meta.folders || []
     let notes = meta.notes || []
 
+    const basePath = await getNotesBasePath()
+    if (basePath && isElectron) ({ notes, folders } = await scanNotesFolder(basePath, notes, folders))
     notes = await backfillNotePaths(notes, folders)
 
     notes = notes.map(n => ({
@@ -459,11 +462,15 @@ const useNoteStore = create((set, get) => {
 
   syncNotePaths: async () => {
     const { folders, notes } = get()
-    const updated = await backfillNotePaths(notes, folders)
-    if (updated !== notes) {
-      set({ notes: updated })
+    const basePath = await getNotesBasePath()
+    let scan = { notes, folders, added: 0 }
+    if (basePath && isElectron) scan = await scanNotesFolder(basePath, notes, folders)
+    const updated = await backfillNotePaths(scan.notes, scan.folders)
+    if (updated !== notes || scan.folders !== folders) {
+      set({ notes: updated, folders: scan.folders })
       await persistStoreState(get)
     }
+    return { added: scan.added }
   },
 
   importDriveNotes: async () => {

@@ -249,6 +249,7 @@ export default function EditorPane({
                   showBounds={showBounds}
                   activeMatch={activeMatch}
                   matchBlockIndices={matchBlockIndices}
+                  searchQuery={isActivePane ? searchQuery : ''}
                   onSelectionLengthChange={isActivePane ? onSelectionLengthChange : undefined}
                   activeNoteId={noteId}
                   onOpenNote={openNote}

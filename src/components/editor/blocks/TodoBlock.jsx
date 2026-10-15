@@ -55,7 +55,27 @@ function DateTimeField({ label, value, onChange }) {
   )
 }
 
-export default function TodoBlock({ block, onChange, onDelete, focused, onFocus, onEnter, searchSelectRange }) {
+// Text-transparent copy of an input's text with <mark>s, layered behind the real field.
+function MatchMirror({ text, query, className = '', style, innerRef }) {
+  const q = query.trim().toLowerCase()
+  if (!q || !text) return null
+  const parts = []
+  const lower = text.toLowerCase()
+  let pos = 0
+  for (let i = lower.indexOf(q); i !== -1; i = lower.indexOf(q, pos)) {
+    parts.push(text.slice(pos, i), <mark key={i} className="bg-tag-warning/45 text-transparent rounded-sm">{text.slice(i, i + q.length)}</mark>)
+    pos = i + q.length
+  }
+  parts.push(text.slice(pos))
+  return (
+    <div ref={innerRef} aria-hidden style={style}
+         className={`absolute inset-0 pointer-events-none overflow-hidden text-transparent ${className}`}>
+      {parts}
+    </div>
+  )
+}
+
+export default function TodoBlock({ block, onChange, onDelete, focused, onFocus, onEnter, searchSelectRange, searchQuery = '' }) {
   const todos      = useTodoStore(s => s.todos)
   const addTodo    = useTodoStore(s => s.addTodo)
   const updateTodo = useTodoStore(s => s.updateTodo)
@@ -66,6 +86,7 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
   const [notesHeight, setNotesHeight] = useState(NOTES_COLLAPSED_HEIGHT)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
+  const notesMirrorRef = useRef(null)
   const rootRef = useRef(null)
   const notesDragging = useRef(false)
 
@@ -269,6 +290,8 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
         </button>
 
         {/* Title input */}
+        <div className="relative flex-1 min-w-0">
+        <MatchMirror text={block.content} query={searchQuery} className="flex items-center whitespace-pre text-body-md leading-snug" />
         <input
           ref={inputRef}
           value={block.content}
@@ -282,13 +305,14 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
           placeholder="Task title..."
           title={block.content}
           className={`
-            flex-1 min-w-0 bg-transparent text-body-md leading-snug
+            relative w-full min-w-0 bg-transparent text-body-md leading-snug
             focus:outline-none placeholder:text-text-faint
             transition-all duration-150
             ${!titleFocused && isLongTodoTitle(block.content) ? 'truncate' : ''}
             ${statusCfg.title}
           `}
         />
+        </div>
 
         <div className="flex items-center gap-2 flex-none">
           <span
@@ -332,16 +356,26 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
       </div>
 
       <div className="px-3 pb-2 pl-7" onClick={e => e.stopPropagation()}>
+        <div className="relative rounded-md bg-surface2/60">
+        <MatchMirror
+          text={todo?.description || ''}
+          query={searchQuery}
+          innerRef={notesMirrorRef}
+          style={{ height: notesHeight }}
+          className="border border-transparent px-2.5 py-1.5 text-body-sm whitespace-pre-wrap break-words"
+        />
         <textarea
           ref={notesRef}
           value={todo?.description || ''}
+          onScroll={e => { if (notesMirrorRef.current) notesMirrorRef.current.scrollTop = e.target.scrollTop }}
           onChange={handleNotesChange}
           placeholder="Notes..."
           style={{ height: notesHeight }}
-          className="w-full bg-surface2/60 border border-border/60 rounded-md px-2.5 py-1.5
+          className="relative w-full bg-transparent border border-border/60 rounded-md px-2.5 py-1.5
                      text-body-sm text-text placeholder:text-text-faint
                      focus:outline-none focus:ring-1 focus:ring-accent resize-none overflow-y-auto"
         />
+        </div>
         <div
           role="separator"
           aria-orientation="horizontal"

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   HardDrive, Cloud, Send, Moon, Sun, Folder, PenLine, ListTodo,
-  CheckCircle, XCircle, Loader, ExternalLink, Eye, EyeOff, ArrowLeft, Download, Bell, Volume2, Trash2,
+  CheckCircle, XCircle, Loader, ExternalLink, Eye, EyeOff, ArrowLeft, Download, Bell, Volume2, Trash2, RefreshCw,
 } from 'lucide-react'
 import { TRASH_RETENTION_OPTIONS, DEFAULT_TRASH_RETENTION_DAYS } from '../../lib/noteTrash'
 import useSettingsStore from '../../store/settingsStore'
@@ -329,6 +329,19 @@ export default function SettingsPage() {
     if (path) await syncNotePaths()
   }
 
+  const [folderSyncing, setFolderSyncing] = useState(false)
+  const [folderSyncStatus, setFolderSyncStatus] = useState(null)
+  const handleSyncFolder = async () => {
+    setFolderSyncing(true)
+    try {
+      await flush()
+      const { added } = await syncNotePaths()
+      setFolderSyncStatus(added ? `${added} item(s) imported` : 'Already up to date')
+    } finally {
+      setFolderSyncing(false)
+    }
+  }
+
   const handleNotesPathBlur = async () => {
     await flush()
     if (notesPath?.trim()) await syncNotePaths()
@@ -574,7 +587,17 @@ export default function SettingsPage() {
               <p className="text-body-sm text-text-faint mt-1.5">
                 Notes are stored as <code className="font-mono text-accent bg-surface2 px-1 rounded">.md</code> files in this folder.
                 Todos are stored in the app's data directory.
+                The folder is scanned on every launch.
               </p>
+              {isElectron && (
+                <div className="flex items-center gap-3 mt-2">
+                  <button onClick={handleSyncFolder} disabled={folderSyncing || !notesPath?.trim()} className="btn-secondary btn-sm">
+                    <RefreshCw size={14} className={folderSyncing ? 'animate-spin' : ''} />
+                    Sync from folder
+                  </button>
+                  {folderSyncStatus && <span className="text-body-sm text-text-faint">{folderSyncStatus}</span>}
+                </div>
+              )}
             </div>
 
             <div>

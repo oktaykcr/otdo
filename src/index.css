@@ -311,3 +311,8 @@
 .code-block-highlight .hljs-bullet {
   color: #56b6c2;
 }
+
+::highlight(otdo-search) {
+  background-color: rgba(245, 158, 11, 0.45);
+  color: inherit;
+}
