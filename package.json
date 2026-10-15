@@ -67,7 +67,7 @@
     },
     "win": {
       "target": "nsis",
-      "icon": "build/icon.ico"
+      "icon": "build/icon-win.png"
     },
     "linux": {
       "icon": "build/icon.png"
