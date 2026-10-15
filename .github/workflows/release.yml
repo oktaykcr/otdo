@@ -16,6 +16,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - name: Check tag matches package.json version
+        run: |
+          PKG="v$(node -p "require('./package.json').version")"
+          [ "$PKG" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME != package.json $PKG"; exit 1; }
       - run: npm ci
       - run: npx vite build
       # Unsigned build; see README/release notes for the Gatekeeper workaround.
