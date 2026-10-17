@@ -624,6 +624,8 @@ export default function SettingsPage() {
                 <p className="text-body-sm text-text-faint mt-1.5">
                   Saves todos (status, dates, reminders), notes metadata, settings and XP/level stats to one file.
                   The file includes your Drive and Telegram credentials, so keep it private.
+                  <strong className="text-text-muted"> Note files are not included:</strong> copy your notes folder separately,
+                  set it as the Notes Folder Path, then restore the backup.
                 </p>
               </div>
             )}
