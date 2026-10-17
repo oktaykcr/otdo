@@ -1,6 +1,6 @@
 {
   "name": "otdo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "OTDO - Simple Todo & Note App",
   "author": "Oktay Kocer <oktaykocer@outlook.com>",
   "main": "electron/main.js",
