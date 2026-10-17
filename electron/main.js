@@ -313,6 +313,11 @@ ipcMain.handle('dialog:openDirectory', async () => {
   return result.canceled ? null : result.filePaths[0]
 })
 
+ipcMain.handle('dialog:openFile', async (_e, opts) => {
+  const result = await dialog.showOpenDialog(mainWindow, { ...opts, properties: ['openFile'] })
+  return result.canceled ? null : result.filePaths[0]
+})
+
 ipcMain.handle('dialog:saveFile', async (_e, opts) => {
   const result = await dialog.showSaveDialog(mainWindow, opts)
   return result.canceled ? null : result.filePath
