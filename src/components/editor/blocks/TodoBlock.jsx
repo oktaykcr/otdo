@@ -198,31 +198,35 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
     }
   }
 
+  // A todo marker imported from a note file may point to a todo that no longer exists
+  // (fresh install); recreate it instead of silently updating nothing.
+  const resolveTodoId = async (title) => (block.todoId && todo ? block.todoId : ensureTodo(title))
+
   const toggleDone = async () => {
-    const id = block.todoId || await ensureTodo(block.content)
+    const id = await resolveTodoId(block.content)
     const next = isDone ? 'pending' : 'done'
     await updateTodo(id, { status: next })
   }
 
   const setPriority = async (p) => {
-    const id = block.todoId || await ensureTodo(block.content)
+    const id = await resolveTodoId(block.content)
     await updateTodo(id, { priority: p })
   }
 
   const setDateTime = async (field, localValue) => {
-    const id = block.todoId || await ensureTodo(block.content)
+    const id = await resolveTodoId(block.content)
     await updateTodo(id, { [field]: fromDateTimeLocalValue(localValue) })
   }
 
   const handleNotesChange = async (e) => {
     const val = e.target.value
     if (!block.todoId && !block.content.trim()) return
-    const id = block.todoId || await ensureTodo(block.content.trim())
+    const id = await resolveTodoId(block.content.trim())
     await updateTodo(id, { description: val })
   }
 
   const setStatus = async (nextStatus) => {
-    const id = block.todoId || await ensureTodo(block.content)
+    const id = await resolveTodoId(block.content)
     await updateTodo(id, { status: nextStatus })
   }
 
@@ -232,7 +236,7 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
   }
 
   const updateReminder = async (reminder) => {
-    const id = block.todoId || await ensureTodo(block.content)
+    const id = await resolveTodoId(block.content)
     await updateTodo(id, { reminder })
   }
 
