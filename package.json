@@ -71,6 +71,7 @@
     },
     "linux": {
       "icon": "build/icon.png"
-    }
+    },
+    "afterPack": "scripts/adhoc-sign.js"
   }
 }
