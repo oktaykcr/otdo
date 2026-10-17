@@ -63,7 +63,8 @@
       "extendInfo": {
         "NSHumanReadableCopyright": "Copyright © 2026 Oktay Kocer",
         "CFBundleGetInfoString": "OTDO - Simple Todo & Note App"
-      }
+      },
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "win": {
       "target": "nsis",
