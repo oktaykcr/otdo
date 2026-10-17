@@ -5,6 +5,7 @@ import {
   CheckCircle, XCircle, Loader, ExternalLink, Eye, EyeOff, ArrowLeft, Download, Bell, Volume2, Trash2, RefreshCw,
 } from 'lucide-react'
 import { TRASH_RETENTION_OPTIONS, DEFAULT_TRASH_RETENTION_DAYS } from '../../lib/noteTrash'
+import { exportBackup, importBackup } from '../../lib/appBackup'
 import useSettingsStore from '../../store/settingsStore'
 import useNoteStore from '../../store/noteStore'
 import { connectGoogleDrive, cancelGoogleDriveConnect } from '../../lib/googleDriveConnect'
@@ -342,6 +343,16 @@ export default function SettingsPage() {
     }
   }
 
+  const [backupStatus, setBackupStatus] = useState(null)
+  const handleBackup = async (restore) => {
+    if (restore && !window.confirm('Restore replaces todos, notes metadata, settings and stats with the backup, then reloads the app. Continue?')) return
+    const r = await (restore ? importBackup() : exportBackup())
+    if (r.canceled) return
+    if (!r.ok) return setBackupStatus({ ok: false, message: r.error || 'Failed' })
+    if (restore) window.location.reload()
+    else setBackupStatus({ ok: true, message: 'Backup saved' })
+  }
+
   const handleNotesPathBlur = async () => {
     await flush()
     if (notesPath?.trim()) await syncNotePaths()
@@ -599,6 +610,25 @@ export default function SettingsPage() {
                 </div>
               )}
             </div>
+
+            {isElectron && (
+              <div>
+                <label className="label">Backup</label>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => handleBackup(false)} className="btn-secondary btn-sm">Export backup</button>
+                  <button onClick={() => handleBackup(true)} className="btn-secondary btn-sm">Restore backup</button>
+                  {backupStatus && (
+                    <span className={`text-body-sm ${backupStatus.ok ? 'text-text-faint' : 'text-tag-important'}`}>{backupStatus.message}</span>
+                  )}
+                </div>
+                <p className="text-body-sm text-text-faint mt-1.5">
+                  Saves todos (status, dates, reminders), notes metadata, settings and XP/level stats to one file.
+                  The file includes your Drive and Telegram credentials, so keep it private.
+                  <strong className="text-text-muted"> Note files are not included:</strong> copy your notes folder separately,
+                  set it as the Notes Folder Path, then restore the backup.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="label">Default Export Format</label>
