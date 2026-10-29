@@ -697,6 +697,18 @@ const useNoteStore = create((set, get) => {
       await get().deleteNote(note.id)
     }
 
+    if (isElectron) {
+      const basePath = await getNotesBasePath()
+      if (basePath) {
+        const all = get().folders
+        const dirs = all
+          .filter(f => affectedFolderIds.has(f.id))
+          .map(f => `${buildFolderPath(basePath, f.parentId, all)}/${f.name}`)
+          .sort((a, b) => b.length - a.length) // children before parents
+        for (const dir of dirs) await window.api.fs.rmdir(dir)
+      }
+    }
+
     const folders = get().folders.filter(f => !affectedFolderIds.has(f.id))
     set({ folders })
     await persistStoreState(get)

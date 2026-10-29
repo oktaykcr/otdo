@@ -22,6 +22,26 @@ app.setName(APP_NAME)
 
 let mainWindow
 
+// Errors from main and renderer go to <userData>/errors.txt (capped: rotated at 1 MB).
+function logError(source, err) {
+  try {
+    const file = path.join(app.getPath('userData'), 'errors.txt')
+    if (fs.existsSync(file) && fs.statSync(file).size > 1024 * 1024) fs.renameSync(file, `${file}.old`)
+    const msg = err && err.stack ? err.stack : String(err)
+    fs.appendFileSync(file, `[${new Date().toISOString()}] [${source}] v${app.getVersion()}\n${msg}\n\n`)
+  } catch {
+    // never throw from the logger
+  }
+}
+process.on('uncaughtException', (e) => logError('main', e))
+process.on('unhandledRejection', (e) => logError('main', e))
+ipcMain.handle('log:error', (_e, msg) => logError('renderer', msg))
+ipcMain.handle('log:reveal', () => {
+  const file = path.join(app.getPath('userData'), 'errors.txt')
+  if (fs.existsSync(file)) shell.showItemInFolder(file)
+  else shell.openPath(app.getPath('userData'))
+})
+
 function resolveAboutIconPath() {
   const candidates = [
     path.join(__dirname, '../build/icon.png'),
@@ -286,6 +306,18 @@ ipcMain.handle('fs:listDir', async (_e, dirPath) => {
 ipcMain.handle('fs:mkdir', async (_e, dirPath) => {
   try {
     fs.mkdirSync(dirPath, { recursive: true })
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+})
+
+// Non-recursive on purpose: fails if the folder still holds user files.
+ipcMain.handle('fs:rmdir', async (_e, dirPath) => {
+  try {
+    const ds = path.join(dirPath, '.DS_Store')
+    if (fs.existsSync(ds)) fs.unlinkSync(ds)
+    fs.rmdirSync(dirPath)
     return { ok: true }
   } catch (err) {
     return { ok: false, error: err.message }
