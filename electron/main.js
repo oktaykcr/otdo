@@ -186,6 +186,15 @@ function resolveAppIcons() {
   }
 }
 
+// Only web/mail links may leave the app; blocks file:// and custom-protocol launches.
+function isSafeExternalUrl(url) {
+  try {
+    return ['http:', 'https:', 'mailto:'].includes(new URL(url).protocol)
+  } catch {
+    return false
+  }
+}
+
 function createWindow() {
   const isMac = process.platform === 'darwin'
   const icons = resolveAppIcons()
@@ -205,6 +214,19 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
+  })
+
+  // The window must never show remote pages: they would get window.api (fs access) via preload.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isSafeExternalUrl(url)) shell.openExternal(url)
+    return { action: 'deny' }
+  })
+  mainWindow.webContents.on('will-navigate', (e, url) => {
+    const appUrl = isDev ? 'http://localhost:5173' : require('url').pathToFileURL(path.join(__dirname, '../dist/index.html')).href
+    if (!url.startsWith(appUrl)) {
+      e.preventDefault()
+      if (isSafeExternalUrl(url)) shell.openExternal(url)
+    }
   })
 
   if (isDev) {
@@ -622,5 +644,5 @@ ipcMain.handle('dock:setBadge', (_e, count) => {
 
 // ─── IPC: Shell ────────────────────────────────────────────────────────────
 ipcMain.handle('shell:openExternal', (_e, url) => {
-  shell.openExternal(url)
+  if (isSafeExternalUrl(url)) shell.openExternal(url)
 })
