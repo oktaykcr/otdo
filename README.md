@@ -114,7 +114,7 @@ Pushing a tag `v*` runs `.github/workflows/release.yml`, which builds on macOS (
 
 ```bash
 # 1. bump "version" in package.json and merge it (the workflow fails if the tag and version differ)
-git tag v1.0.5 && git push origin v1.0.5
+git tag v1.0.6 && git push origin v1.0.6
 ```
 
 macOS builds are **ad-hoc signed** (`scripts/adhoc-sign.js`) but not notarized, so on first launch macOS may say Apple cannot verify the app. Open **System Settings → Privacy & Security → Open Anyway**, or run `xattr -cr /Applications/OTDO.app`. Pick the `arm64` build on Apple Silicon and the `x64` build on Intel Macs. Removing the warning entirely needs an Apple Developer ID certificate and notarization.
@@ -128,7 +128,7 @@ Update the top-level fields in `package.json`:
 ```json
 {
   "name": "otdo",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "OTDO - Simple Todo & Note App",
   "author": "Your Name <email@example.com>"
 }
@@ -136,7 +136,7 @@ Update the top-level fields in `package.json`:
 
 | Field | Purpose |
 |-------|---------|
-| `version` | Appears in output names (`OTDO-1.0.5-arm64.dmg`) |
+| `version` | Appears in output names (`OTDO-1.0.6-arm64.dmg`) |
 | `author` | Clears electron-builder author warnings; package metadata |
 
 ### 2. Icon (optional)
