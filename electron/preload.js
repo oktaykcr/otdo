@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('api', {
     deleteFile: (path) => ipcRenderer.invoke('fs:deleteFile', path),
     listDir: (path) => ipcRenderer.invoke('fs:listDir', path),
     mkdir: (path) => ipcRenderer.invoke('fs:mkdir', path),
+    rmdir: (path) => ipcRenderer.invoke('fs:rmdir', path),
     exists: (path) => ipcRenderer.invoke('fs:exists', path),
     rename: (oldPath, newPath) => ipcRenderer.invoke('fs:rename', oldPath, newPath),
   },
@@ -52,6 +53,11 @@ contextBridge.exposeInMainWorld('api', {
   },
 
   // Shell
+  log: {
+    error: (msg) => ipcRenderer.invoke('log:error', msg),
+    reveal: () => ipcRenderer.invoke('log:reveal'),
+  },
+
   shell: {
     openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   },

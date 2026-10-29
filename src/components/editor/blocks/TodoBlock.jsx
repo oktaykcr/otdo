@@ -161,8 +161,8 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
     el.setSelectionRange(searchSelectRange.start, searchSelectRange.end)
   }, [searchSelectRange])
 
-  const ensureTodo = async (title) => {
-    if (block.todoId) return block.todoId
+  const ensureTodo = async (title, { force = false } = {}) => {
+    if (block.todoId && !force) return block.todoId
     const t = await addTodo({ title, priority: 'medium' })
     onChange({ ...block, todoId: t.id, content: title })
     return t.id
@@ -200,7 +200,7 @@ export default function TodoBlock({ block, onChange, onDelete, focused, onFocus,
 
   // A todo marker imported from a note file may point to a todo that no longer exists
   // (fresh install); recreate it instead of silently updating nothing.
-  const resolveTodoId = async (title) => (block.todoId && todo ? block.todoId : ensureTodo(title))
+  const resolveTodoId = async (title) => (block.todoId && todo ? block.todoId : ensureTodo(title, { force: true }))
 
   const toggleDone = async () => {
     const id = await resolveTodoId(block.content)
